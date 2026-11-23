@@ -14,3 +14,18 @@ export interface Page<T> {
   pageSize: number;
   total: number;
 }
+
+export type Kind = 'MANDATORY' | 'PROFILE' | 'FREE';
+
+export interface Offer {
+  id: number;
+  disciplineCode: string;
+  disciplineName: string;
+  workload: number;
+  professorName: string;
+  capacity: number;
+  availableSeats: number;
+  kind: Kind;
+  enrolled: boolean;
+  approved: boolean;
+}
