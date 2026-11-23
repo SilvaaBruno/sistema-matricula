@@ -1,9 +1,13 @@
 import cors from 'cors';
-import express, { type ErrorRequestHandler } from 'express';
+import express, { type ErrorRequestHandler, type Request, Router } from 'express';
 import { ZodError, z } from 'zod';
-import { login } from './auth';
+import { login, requireAuth, requireRole, type AuthedRequest } from './auth';
 import type { DB } from './db';
 import { AppError } from './errors';
+import { pageQuery } from './pagination';
+import { listOffers } from './services/offers';
+
+const me = (req: Request) => (req as AuthedRequest).user.id;
 
 export function createApp(db: DB) {
   const app = express();
@@ -14,6 +18,20 @@ export function createApp(db: DB) {
     const { username } = z.object({ username: z.string().trim().min(1) }).parse(req.body);
     res.json(login(db, username));
   });
+
+  const guarded = (role: 'SECRETARY' | 'STUDENT') => {
+    const r = Router();
+    r.use(requireAuth, requireRole(role));
+    return r;
+  };
+
+  // ---- Aluno (sempre escopado pelo id do token: regra 9) ----
+  const offers = guarded('STUDENT');
+  offers.get('/', (req, res) => {
+    const q = pageQuery.parse(req.query);
+    res.json(listOffers(db, me(req), q.page, q.pageSize, q.search));
+  });
+  app.use('/offers', offers);
 
   const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
     if (err instanceof AppError) {
