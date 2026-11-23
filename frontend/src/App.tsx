@@ -1,3 +1,13 @@
+import { BrowserRouter } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
+import { AppRoutes } from './routes/AppRoutes';
+
 export function App() {
-  return <h1>Sistema de Matrícula</h1>;
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </BrowserRouter>
+  );
 }
