@@ -13,6 +13,9 @@ export function StudentLayout() {
             Sair
           </button>
         </span>
+        <nav className="tabs" aria-label="Menu do aluno">
+          <NavLink to="ofertas">Ofertas</NavLink>
+        </nav>
       </header>
       <main className="container">
         <Outlet />

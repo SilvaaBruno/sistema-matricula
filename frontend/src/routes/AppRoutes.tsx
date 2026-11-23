@@ -3,7 +3,7 @@ import { StudentLayout } from '../components/StudentLayout';
 import { SecretaryLayout } from '../components/SecretaryLayout';
 import { homeOf, useAuth } from '../contexts/AuthContext';
 import { LoginPage } from '../pages/LoginPage';
-
+import { OffersPage } from '../pages/student/OffersPage';
 import { RequireRole } from './RequireRole';
 
 export function AppRoutes() {
@@ -19,7 +19,8 @@ export function AppRoutes() {
           </RequireRole>
         }
       >
-        <Route index element={<p className="muted">Bem-vindo(a)! As telas desta área chegam nas próximas etapas.</p>} />
+        <Route index element={<Navigate to="ofertas" replace />} />
+        <Route path="ofertas" element={<OffersPage />} />
       </Route>
       <Route
         path="/secretaria"
