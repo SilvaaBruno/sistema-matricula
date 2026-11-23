@@ -4,6 +4,19 @@ import { classify, getStudent } from './classification';
 import { getPrerequisites, missingPrerequisites } from './prerequisites';
 
 /** Ofertas do semestre para o aluno, com a classificação da disciplina no curso dele. */
+interface OfferRow {
+  id: number;
+  capacity: number;
+  disciplineId: number;
+  disciplineCode: string;
+  disciplineName: string;
+  workload: number;
+  professorName: string;
+  occupied: number;
+  enrolled: number; // 0 ou 1 (EXISTS do SQLite)
+  approved: number;
+}
+
 export function listOffers(db: DB, studentId: number, page: number, pageSize: number, search?: string): Page<unknown> {
   const { courseId } = getStudent(db, studentId);
   const like = likePattern(search);
@@ -19,7 +32,7 @@ export function listOffers(db: DB, studentId: number, page: number, pageSize: nu
               EXISTS (SELECT 1 FROM history h WHERE h.student_id = ? AND h.discipline_id = d.id AND h.status = 'APPROVED') AS approved
        ${from} ${where} ORDER BY d.code, c.id LIMIT ? OFFSET ?`,
     )
-    .all(studentId, studentId, like, like, like, pageSize, (page - 1) * pageSize) as any[];
+    .all(studentId, studentId, like, like, like, pageSize, (page - 1) * pageSize) as OfferRow[];
   const data = rows.map((r) => ({
     id: r.id,
     disciplineCode: r.disciplineCode,
