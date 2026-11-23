@@ -9,6 +9,7 @@ export function SecretaryLayout() {
         <strong>Secretaria</strong>
         <nav className="side-nav" aria-label="Menu da secretaria">
           <NavLink to="disciplinas">Disciplinas</NavLink>
+          <NavLink to="professores">Professores</NavLink>
         </nav>
         <div className="sidebar-user">
           <span>{user?.name}</span>
