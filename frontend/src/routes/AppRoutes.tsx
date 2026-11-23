@@ -5,6 +5,7 @@ import { homeOf, useAuth } from '../contexts/AuthContext';
 import { LoginPage } from '../pages/LoginPage';
 import { OffersPage } from '../pages/student/OffersPage';
 import { EnrollmentsPage } from '../pages/student/EnrollmentsPage';
+import { ProgressPage } from '../pages/student/ProgressPage';
 import { RequireRole } from './RequireRole';
 
 export function AppRoutes() {
@@ -23,6 +24,7 @@ export function AppRoutes() {
         <Route index element={<Navigate to="ofertas" replace />} />
         <Route path="ofertas" element={<OffersPage />} />
         <Route path="matriculas" element={<EnrollmentsPage />} />
+        <Route path="progresso" element={<ProgressPage />} />
       </Route>
       <Route
         path="/secretaria"

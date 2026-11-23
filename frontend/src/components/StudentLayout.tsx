@@ -16,6 +16,7 @@ export function StudentLayout() {
         <nav className="tabs" aria-label="Menu do aluno">
           <NavLink to="ofertas">Ofertas</NavLink>
           <NavLink to="matriculas">Minhas matrículas</NavLink>
+          <NavLink to="progresso">Progresso</NavLink>
         </nav>
       </header>
       <main className="container">

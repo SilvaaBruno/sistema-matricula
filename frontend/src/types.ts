@@ -38,3 +38,17 @@ export interface Enrollment {
   workload: number;
   professorName: string;
 }
+
+export interface GroupProgress {
+  required: number;
+  completed: number;
+  inProgress: number;
+  remaining: number;
+  percent: number;
+}
+
+export interface Progress {
+  mandatory: GroupProgress;
+  profile: GroupProgress;
+  free: GroupProgress;
+}
