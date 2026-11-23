@@ -8,6 +8,7 @@ import { EnrollmentsPage } from '../pages/student/EnrollmentsPage';
 import { ProgressPage } from '../pages/student/ProgressPage';
 import { DisciplinesPage } from '../pages/secretary/DisciplinesPage';
 import { ProfessorsPage } from '../pages/secretary/ProfessorsPage';
+import { ClassesPage } from '../pages/secretary/ClassesPage';
 import { RequireRole } from './RequireRole';
 
 export function AppRoutes() {
@@ -39,6 +40,7 @@ export function AppRoutes() {
         <Route index element={<Navigate to="disciplinas" replace />} />
         <Route path="disciplinas" element={<DisciplinesPage />} />
         <Route path="professores" element={<ProfessorsPage />} />
+        <Route path="turmas" element={<ClassesPage />} />
       </Route>
       <Route path="*" element={<Navigate to={user ? homeOf(user.role) : '/login'} replace />} />
     </Routes>
