@@ -5,8 +5,14 @@ import { login, requireAuth, requireRole, type AuthedRequest } from './auth';
 import type { DB } from './db';
 import { AppError } from './errors';
 import { pageQuery } from './pagination';
+import { cancel, enroll, listActiveEnrollments } from './services/enrollments';
 import { listOffers } from './services/offers';
 
+const idParam = (req: Request) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id < 1) throw new AppError(400, 'VALIDATION_ERROR', 'Id inválido');
+  return id;
+};
 const me = (req: Request) => (req as AuthedRequest).user.id;
 
 export function createApp(db: DB) {
@@ -32,6 +38,18 @@ export function createApp(db: DB) {
     res.json(listOffers(db, me(req), q.page, q.pageSize, q.search));
   });
   app.use('/offers', offers);
+
+  const enrollments = guarded('STUDENT');
+  enrollments.get('/', (req, res) => res.json(listActiveEnrollments(db, me(req))));
+  enrollments.post('/', (req, res) => {
+    const { classId } = z.object({ classId: z.number().int().positive() }).parse(req.body);
+    res.status(201).json(enroll(db, me(req), classId));
+  });
+  enrollments.delete('/:id', (req, res) => {
+    cancel(db, me(req), idParam(req));
+    res.status(204).end();
+  });
+  app.use('/enrollments', enrollments);
 
   const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
     if (err instanceof AppError) {
