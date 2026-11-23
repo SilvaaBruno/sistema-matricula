@@ -28,6 +28,8 @@ export interface Offer {
   kind: Kind;
   enrolled: boolean;
   approved: boolean;
+  prerequisites: string[];
+  missingPrerequisites: string[];
 }
 
 export interface Enrollment {

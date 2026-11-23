@@ -23,6 +23,7 @@ function seatsText(o: Offer) {
 function action(o: Offer) {
   if (o.approved) return { label: 'Já aprovado', disabled: true };
   if (o.enrolled) return { label: 'Matriculado', disabled: true };
+  if (o.missingPrerequisites.length > 0) return { label: 'Pré-requisito pendente', disabled: true };
   if (o.availableSeats <= 0) return { label: 'Lotada', disabled: true };
   return { label: 'Matricular', disabled: false };
 }
@@ -66,6 +67,12 @@ export function OffersPage() {
                 <p className="muted">
                   {o.professorName} · {o.workload}h
                 </p>
+                {o.prerequisites.length > 0 && (
+                  <p className={o.missingPrerequisites.length > 0 ? 'muted prereq-missing' : 'muted'}>
+                    Pré-requisitos: {o.prerequisites.join(', ')}
+                    {o.missingPrerequisites.length > 0 && ` (falta: ${o.missingPrerequisites.join(', ')})`}
+                  </p>
+                )}
                 <p className={o.availableSeats <= 0 ? 'seats seats-full' : 'seats'}>{seatsText(o)}</p>
                 <div className="card-actions">
                   <button
