@@ -7,6 +7,7 @@ import { AppError } from './errors';
 import { pageQuery } from './pagination';
 import { cancel, enroll, listActiveEnrollments } from './services/enrollments';
 import { listOffers } from './services/offers';
+import { getProgress } from './services/progress';
 
 const idParam = (req: Request) => {
   const id = Number(req.params.id);
@@ -50,6 +51,10 @@ export function createApp(db: DB) {
     res.status(204).end();
   });
   app.use('/enrollments', enrollments);
+
+  const progress = guarded('STUDENT');
+  progress.get('/', (req, res) => res.json(getProgress(db, me(req))));
+  app.use('/progress', progress);
 
   const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
     if (err instanceof AppError) {
