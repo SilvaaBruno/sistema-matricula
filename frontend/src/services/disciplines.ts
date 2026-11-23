@@ -7,8 +7,9 @@ export interface Discipline {
   code: string;
   name: string;
   workload: number;
+  prerequisites: { id: number; code: string; name: string }[];
 }
-export type DisciplineInput = Omit<Discipline, 'id'>;
+export type DisciplineInput = Omit<Discipline, 'id' | 'prerequisites'> & { prerequisiteIds: number[] };
 
 export const listDisciplines = (params: ListParams, signal?: AbortSignal) => api<Page<Discipline>>(`/disciplines?${listQuery(params)}`, { signal });
 export const createDiscipline = (input: DisciplineInput) => api<Discipline>('/disciplines', { method: 'POST', body: input });

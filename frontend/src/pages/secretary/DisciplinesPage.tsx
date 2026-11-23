@@ -44,6 +44,7 @@ export function DisciplinesPage() {
                   <th>Código</th>
                   <th>Nome</th>
                   <th>CH</th>
+                  <th>Pré-requisitos</th>
                   <th />
                 </tr>
               </thead>
@@ -53,6 +54,7 @@ export function DisciplinesPage() {
                     <td>{d.code}</td>
                     <td>{d.name}</td>
                     <td>{d.workload}h</td>
+                    <td>{d.prerequisites.length ? d.prerequisites.map((p) => p.code).join(', ') : '—'}</td>
                     <td>
                       <button className="btn btn-small" aria-label={`Editar ${d.code}`} onClick={() => setEditing(d)}>
                         Editar
