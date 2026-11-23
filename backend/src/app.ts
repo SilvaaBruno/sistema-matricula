@@ -8,6 +8,7 @@ import { pageQuery } from './pagination';
 import { cancel, enroll, listActiveEnrollments } from './services/enrollments';
 import { createDiscipline, disciplineSchema, listDisciplines, updateDiscipline } from './services/disciplines';
 import { listOffers } from './services/offers';
+import { createProfessor, listProfessors, professorSchema } from './services/professors';
 import { getProgress } from './services/progress';
 
 const idParam = (req: Request) => {
@@ -46,6 +47,16 @@ export function createApp(db: DB) {
     res.json(updateDiscipline(db, idParam(req), disciplineSchema.parse(req.body)));
   });
   app.use('/disciplines', disciplines);
+
+  const professors = guarded('SECRETARY');
+  professors.get('/', (req, res) => {
+    const q = pageQuery.parse(req.query);
+    res.json(listProfessors(db, q.page, q.pageSize, q.search));
+  });
+  professors.post('/', (req, res) => {
+    res.status(201).json(createProfessor(db, professorSchema.parse(req.body)));
+  });
+  app.use('/professors', professors);
 
   // ---- Aluno (sempre escopado pelo id do token: regra 9) ----
   const offers = guarded('STUDENT');
