@@ -1,93 +1,106 @@
-# cincoders-sistema-matricula
+# Sistema de Matrícula — Teste Prático (CIn-UFPE)
 
+Monorepo do teste prático da seleção de bolsista CInCoders (Edital nº 5/2026): sistema de matrícula de graduação com dois perfis (Secretaria e Aluno).
 
+- `backend/`: API REST em Node + Express + TypeScript + SQLite (`better-sqlite3`), validação com zod, testes com Vitest + Supertest.
+- `frontend/`: React + Vite + TypeScript, React Router, testes com Vitest + Testing Library.
 
-## Getting started
+## Como rodar do zero
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+Requisitos: Node 20+ e npm.
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+```bash
+# 1) Back-end (http://localhost:3333)
+cd backend
+npm install
+npm run seed     # cria matricula.db com os dados iniciais (recria o banco se já existir)
+npm start        # `npm start` também popula o banco se ele ainda não existir
 
-## Add your files
-
-* [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
-
+# 2) Front-end (http://localhost:5173) — em outro terminal
+cd frontend
+npm install
+npm run dev      # o Vite encaminha /api para http://localhost:3333
 ```
-cd existing_repo
-git remote add origin https://gitlab.cin.ufpe.br/bas6/cincoders-sistema-matricula.git
-git branch -M main
-git push -uf origin main
-```
 
-## Integrate with your tools
+Testes: `npm test` dentro de `backend/` e de `frontend/`. Verificação de tipos: `npm run typecheck`. Build do front: `npm run build`.
 
-* [Set up project integrations](https://gitlab.cin.ufpe.br/bas6/cincoders-sistema-matricula/-/settings/integrations)
+Variáveis opcionais: `PORT`, `DB_FILE` e `JWT_SECRET` (back-end); `VITE_API_URL` (front-end, para apontar para uma API em outro endereço).
 
-## Collaborate with your team
+## Dados iniciais (login só com nome de usuário)
 
-* [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+| Usuário      | Perfil     | Curso                  | Observações |
+|--------------|------------|------------------------|-------------|
+| `secretaria` | Secretaria | —                      | |
+| `ana`        | Aluno      | Sistemas de Informação | 180h de eletivas de perfil (excede 120h, o excedente vira livre); reprovada em IF673 |
+| `bia`        | Aluno      | Sistemas de Informação | só aprovada em IF668 (não pode cursar IF700: falta IF669) |
+| `carlos`     | Aluno      | Ciência da Computação  | reprovado em IF669 (não satisfaz o pré-requisito de IF703) |
+| `dani`       | Aluno      | Ciência da Computação  | só aprovada em IF668 |
 
-## Test and Deploy
+Os dois cursos compartilham disciplinas classificadas de forma diferente: IF702 é eletiva de perfil em SI e obrigatória em CC; IF673 é o inverso. IF673 tem apenas 2 vagas, para facilitar testar turma lotada.
 
-Use the built-in continuous integration in GitLab.
+## Requisito extra: pré-requisitos entre disciplinas
 
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
+**Por que:** é uma regra comum em sistemas de matrícula e usa dados que o modelo já tem (o histórico de aprovações), então atravessa back-end e front-end sem mexer no restante do modelo.
 
-***
+**Regras que defini:**
+1. Uma disciplina pode ter vários pré-requisitos; a secretaria os define ao cadastrar ou editar a disciplina (o `PUT` substitui a lista inteira).
+2. O aluno só se matricula se tiver **aprovação** em todos os pré-requisitos. Reprovação e matrícula ativa **não** satisfazem.
+3. Recusa com `409 PREREQUISITE_NOT_MET` e os códigos pendentes em `error.details.missing`.
+4. Pré-requisitos valem para todos os cursos (não dependem do curso do aluno).
+5. Uma disciplina não pode ser pré-requisito dela mesma, o pré-requisito precisa existir (`404`) e ciclos são recusados (`409 PREREQUISITE_CYCLE`).
+6. As ofertas mostram os pré-requisitos e o que falta para o aluno; o botão de matrícula fica bloqueado.
 
-# Editing this README
+## API
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+Erros seguem `{ "error": { "code", "message", "details?" } }`. Autenticação: `POST /auth/login` devolve um JWT (8h); enviar `Authorization: Bearer <token>`.
 
-## Suggestions for a good README
+| Método | Rota                | Perfil     | Descrição |
+|--------|---------------------|------------|-----------|
+| POST   | `/auth/login`       | —          | `{ username }` → `{ token, user }` |
+| GET    | `/disciplines`      | Secretaria | Lista com `?search&page&pageSize` (inclui `prerequisites`) |
+| POST   | `/disciplines`      | Secretaria | `code`, `name`, `workload`, `prerequisiteIds?` |
+| PUT    | `/disciplines/:id`  | Secretaria | Edita (substitui os pré-requisitos) |
+| GET    | `/professors`       | Secretaria | Lista com busca e paginação |
+| POST   | `/professors`       | Secretaria | `name`, `email` |
+| GET    | `/classes`          | Secretaria | Turmas com `occupied` e `capacity` (paginado) |
+| POST   | `/classes`          | Secretaria | `disciplineId`, `professorId`, `capacity` |
+| PATCH  | `/classes/:id`      | Secretaria | Altera vagas (`capacity`) |
+| GET    | `/offers`           | Aluno      | Ofertas com `availableSeats`, `kind` (MANDATORY/PROFILE/FREE), `prerequisites` e `missingPrerequisites` |
+| GET    | `/enrollments`      | Aluno      | Minhas matrículas ativas |
+| POST   | `/enrollments`      | Aluno      | `{ classId }` |
+| DELETE | `/enrollments/:id`  | Aluno      | Cancela (a vaga volta para a turma) |
+| GET    | `/progress`         | Aluno      | Por grupo: exigida, integralizada, em curso, falta e percentual |
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+Status: `400` validação, `401` sessão ausente/expirada, `403` perfil sem acesso, `404` não encontrado, `409` regra de negócio recusada (`CLASS_FULL`, `ALREADY_APPROVED`, `ALREADY_ENROLLED`, `CAPACITY_BELOW_ENROLLED`, `DISCIPLINE_CODE_TAKEN`, `PROFESSOR_EMAIL_TAKEN`, `PREREQUISITE_NOT_MET`, `PREREQUISITE_CYCLE`, `ENROLLMENT_NOT_ACTIVE`).
 
-## Name
-Choose a self-explaining name for your project.
+## Principais decisões
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+**Back-end**
+- **SQLite**: zero instalação para quem roda o projeto; as transações síncronas do `better-sqlite3` simplificam a regra de vagas.
+- **Regras em `src/services/`**, separadas das rotas (`src/app.ts`), que só validam a entrada (zod) e delegam.
+- **Segurança**: as rotas do aluno usam sempre o id do token, nunca um id vindo do cliente (regra 9); matrícula de outro aluno responde `404`. Consultas parametrizadas; coringas do `LIKE` removidos da busca.
+- **Matrícula em transação**: checa aprovação prévia, duplicidade, pré-requisitos e lotação.
+- Vagas ocupadas = matrículas `ACTIVE`; cancelar só muda o status, então a vaga volta sozinha.
+- **Progresso**: cada disciplina aprovada conta uma vez; o excedente de perfil soma em livres; percentual limitado a 100% e falta mínima 0.
+- Login sem senha, como o enunciado permite.
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+**Front-end**
+- Sem biblioteca de estado de servidor: o hook `useResource` cobre carregamento, erro com "Tentar de novo" e descarte de respostas atrasadas.
+- **Busca e página ficam na URL** (`?search=…&page=…`), via `usePagedSearch`.
+- Sessão no `localStorage`; qualquer `401` em chamada autenticada limpa a sessão e volta ao login com aviso. `RequireRole` impede um perfil de abrir a área do outro.
+- Mensagens de recusa por regra de negócio vêm da própria API e aparecem na tela.
+- Aluno: layout mobile-first (cartões, a partir de 360px). Secretaria: tabelas, pensada para desktop.
+- Em desenvolvimento o Vite faz proxy de `/api`, evitando CORS e URL fixa no código.
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+**Processo**: cada funcionalidade nasceu em uma branch (`feat/…`, `chore/…`, `docs/…`) mergeada na `develop` com `--no-ff`; a `develop` foi mergeada na `main` ao final. Commits em português (Conventional Commits).
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+## O que ficou de fora e o que eu faria com mais tempo
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+- Professores só têm listagem e cadastro (o enunciado não pede edição).
+- A listagem de turmas não tem busca; os seletores do formulário de turma e de pré-requisitos carregam até 100 disciplinas/professores (limite da API). Com mais dados, usaria um campo de busca assíncrona.
+- Senha com hash e `refresh token`; `helmet` e limite de requisições.
+- Migrações versionadas do banco (hoje o esquema é criado com `CREATE TABLE IF NOT EXISTS`).
+- Testes de ponta a ponta (Playwright) e um pipeline de CI no GitLab com typecheck, testes e build.
+- Concorrência: SQLite aceita uma escrita por vez, o que protege a regra de vagas, mas em produção eu migraria para PostgreSQL com bloqueio de linha.
+- Lista de espera e choque de horário, como evoluções naturais do requisito extra.
+- Revisão de acessibilidade (foco, leitores de tela) e testes em dispositivos reais.
