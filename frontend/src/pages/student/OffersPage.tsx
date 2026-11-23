@@ -56,7 +56,9 @@ export function OffersPage() {
       <PagedView resource={offers} search={search} emptyText="Nenhuma turma aberta neste semestre." onPage={setPage}>
         {(items) => (
           <ul className="cards">
-            {items.map((o) => (
+            {items.map((o) => {
+              const a = action(o); // calcula o estado do botão uma vez por oferta
+              return (
               <li key={o.id} className="card">
                 <div className="card-head">
                   <strong>
@@ -77,15 +79,16 @@ export function OffersPage() {
                 <div className="card-actions">
                   <button
                     className="btn btn-primary"
-                    disabled={action(o).disabled || busyId === o.id}
-                    aria-label={action(o).disabled ? undefined : `Matricular em ${o.disciplineCode}`}
+                    disabled={a.disabled || busyId === o.id}
+                    aria-label={a.disabled ? undefined : `Matricular em ${o.disciplineCode}`}
                     onClick={() => onEnroll(o)}
                   >
-                    {action(o).label}
+                    {a.label}
                   </button>
                 </div>
               </li>
-            ))}
+              );
+            })}
           </ul>
         )}
       </PagedView>

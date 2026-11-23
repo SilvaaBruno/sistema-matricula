@@ -37,13 +37,18 @@ export function getProgress(db: DB, studentId: number) {
   const done = sum(approved);
   const doing = sum(active);
 
-  // Regra 11: o excedente de perfil vira eletiva livre.
+  // Regra 11: o que excede a exigência de perfil vira eletiva livre, tanto o aprovado quanto o em curso.
   const profileDone = Math.min(done.PROFILE, course.required_profile);
-  const overflow = done.PROFILE - profileDone;
+  const profileRoom = course.required_profile - profileDone; // saldo ainda aberto no grupo perfil
+  const profileDoing = Math.min(doing.PROFILE, profileRoom);
 
   return {
     mandatory: group(course.required_mandatory, done.MANDATORY, doing.MANDATORY),
-    profile: group(course.required_profile, profileDone, doing.PROFILE),
-    free: group(course.required_free, done.FREE + overflow, doing.FREE),
+    profile: group(course.required_profile, profileDone, profileDoing),
+    free: group(
+      course.required_free,
+      done.FREE + (done.PROFILE - profileDone),
+      doing.FREE + (doing.PROFILE - profileDoing),
+    ),
   };
 }
