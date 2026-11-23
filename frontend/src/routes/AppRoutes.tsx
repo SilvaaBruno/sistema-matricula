@@ -6,6 +6,7 @@ import { LoginPage } from '../pages/LoginPage';
 import { OffersPage } from '../pages/student/OffersPage';
 import { EnrollmentsPage } from '../pages/student/EnrollmentsPage';
 import { ProgressPage } from '../pages/student/ProgressPage';
+import { DisciplinesPage } from '../pages/secretary/DisciplinesPage';
 import { RequireRole } from './RequireRole';
 
 export function AppRoutes() {
@@ -34,7 +35,8 @@ export function AppRoutes() {
           </RequireRole>
         }
       >
-        <Route index element={<p className="muted">Bem-vindo(a)! As telas desta área chegam nas próximas etapas.</p>} />
+        <Route index element={<Navigate to="disciplinas" replace />} />
+        <Route path="disciplinas" element={<DisciplinesPage />} />
       </Route>
       <Route path="*" element={<Navigate to={user ? homeOf(user.role) : '/login'} replace />} />
     </Routes>
