@@ -28,6 +28,12 @@ export function seed(db: DB) {
     for (const c of ['IF668', 'IF669', 'IF702']) link.run(cc, d[c], 'MANDATORY');
     for (const c of ['IF673', 'IF703']) link.run(cc, d[c], 'PROFILE');
 
+    // Pré-requisitos: IF669 exige IF668; IF700 e IF703 exigem IF669.
+    const prereq = db.prepare('INSERT INTO discipline_prerequisites (discipline_id, prerequisite_id) VALUES (?, ?)');
+    prereq.run(d.IF669, d.IF668);
+    prereq.run(d.IF700, d.IF669);
+    prereq.run(d.IF703, d.IF669);
+
     const prof = db.prepare('INSERT INTO professors (name, email) VALUES (?, ?)');
     const p1 = Number(prof.run('Profa. Maria Souza', 'maria.souza@cin.ufpe.br').lastInsertRowid);
     const p2 = Number(prof.run('Prof. João Lima', 'joao.lima@cin.ufpe.br').lastInsertRowid);

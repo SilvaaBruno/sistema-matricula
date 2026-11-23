@@ -22,6 +22,12 @@ CREATE TABLE IF NOT EXISTS course_disciplines (
   kind TEXT NOT NULL CHECK (kind IN ('MANDATORY', 'PROFILE')),
   PRIMARY KEY (course_id, discipline_id)
 );
+CREATE TABLE IF NOT EXISTS discipline_prerequisites (
+  discipline_id INTEGER NOT NULL REFERENCES disciplines(id),
+  prerequisite_id INTEGER NOT NULL REFERENCES disciplines(id),
+  PRIMARY KEY (discipline_id, prerequisite_id),
+  CHECK (discipline_id <> prerequisite_id)
+);
 CREATE TABLE IF NOT EXISTS professors (
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,
