@@ -18,6 +18,8 @@ function CapacityEditor({ row, onDone }: { row: ClassRow; onDone: (notice: Notic
       onDone({ kind: 'success', text: `Vagas de ${row.disciplineCode} atualizadas.` });
     } catch (err) {
       onDone({ kind: 'error', text: errorMessage(err) }); // ex.: vagas abaixo dos matriculados (regra 5)
+    } finally {
+      setBusy(false); // sem isso, uma falha deixava o botão Salvar travado
     }
   }
 

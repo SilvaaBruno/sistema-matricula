@@ -73,6 +73,8 @@ describe('ClassesPage', () => {
     await userEvent.type(input, '1');
     await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('as vagas não podem ser menores');
+    // após a recusa o editor continua aberto e o botão volta a funcionar
+    expect(screen.getByRole('button', { name: 'Salvar' })).toBeEnabled();
   });
 
   it('altera as vagas com sucesso', async () => {
