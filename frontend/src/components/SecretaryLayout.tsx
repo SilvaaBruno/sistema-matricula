@@ -7,6 +7,9 @@ export function SecretaryLayout() {
     <div className="shell shell-secretary">
       <aside className="sidebar">
         <strong>Secretaria</strong>
+        <nav className="side-nav" aria-label="Menu da secretaria">
+          <NavLink to="disciplinas">Disciplinas</NavLink>
+        </nav>
         <div className="sidebar-user">
           <span>{user?.name}</span>
           <button className="btn btn-small" onClick={logout}>
