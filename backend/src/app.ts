@@ -6,6 +6,7 @@ import type { DB } from './db';
 import { AppError } from './errors';
 import { pageQuery } from './pagination';
 import { cancel, enroll, listActiveEnrollments } from './services/enrollments';
+import { createDiscipline, disciplineSchema, listDisciplines, updateDiscipline } from './services/disciplines';
 import { listOffers } from './services/offers';
 import { getProgress } from './services/progress';
 
@@ -31,6 +32,20 @@ export function createApp(db: DB) {
     r.use(requireAuth, requireRole(role));
     return r;
   };
+
+  // ---- Secretaria ----
+  const disciplines = guarded('SECRETARY');
+  disciplines.get('/', (req, res) => {
+    const q = pageQuery.parse(req.query);
+    res.json(listDisciplines(db, q.page, q.pageSize, q.search));
+  });
+  disciplines.post('/', (req, res) => {
+    res.status(201).json(createDiscipline(db, disciplineSchema.parse(req.body)));
+  });
+  disciplines.put('/:id', (req, res) => {
+    res.json(updateDiscipline(db, idParam(req), disciplineSchema.parse(req.body)));
+  });
+  app.use('/disciplines', disciplines);
 
   // ---- Aluno (sempre escopado pelo id do token: regra 9) ----
   const offers = guarded('STUDENT');
