@@ -1,6 +1,7 @@
 import type { DB } from '../db';
 import { likePattern, type Page } from '../pagination';
 import { classify, getStudent } from './classification';
+import { getPrerequisites, missingPrerequisites } from './prerequisites';
 
 /** Ofertas do semestre para o aluno, com a classificação da disciplina no curso dele. */
 export function listOffers(db: DB, studentId: number, page: number, pageSize: number, search?: string): Page<unknown> {
@@ -30,6 +31,8 @@ export function listOffers(db: DB, studentId: number, page: number, pageSize: nu
     kind: classify(db, courseId, r.disciplineId),
     enrolled: !!r.enrolled,
     approved: !!r.approved,
+    prerequisites: getPrerequisites(db, r.disciplineId).map((p) => p.code),
+    missingPrerequisites: missingPrerequisites(db, studentId, r.disciplineId),
   }));
   return { data, page, pageSize, total };
 }
