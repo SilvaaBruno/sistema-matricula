@@ -6,7 +6,7 @@ import { mockApi, renderApp, student } from './helpers';
 
 const offer = (n: number, extra = {}) => ({
   id: n, disciplineCode: `IF${n}`, disciplineName: `Disciplina ${n}`, workload: 60, professorName: 'Prof. João Lima',
-  capacity: 30, availableSeats: 5, kind: 'MANDATORY', enrolled: false, approved: false, ...extra,
+  capacity: 30, availableSeats: 5, kind: 'MANDATORY', enrolled: false, approved: false, prerequisites: [], missingPrerequisites: [], ...extra,
 });
 const offersBody = (data: unknown[]) => ({ body: { data, page: 1, pageSize: 10, total: data.length } });
 

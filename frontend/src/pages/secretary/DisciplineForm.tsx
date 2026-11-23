@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Field } from '../../components/Field';
 import { Notice } from '../../components/Notice';
 import { errorMessage } from '../../services/api';
+import { PrerequisitePicker } from './PrerequisitePicker';
 import { createDiscipline, updateDiscipline, type Discipline } from '../../services/disciplines';
 
 // Regra 2: CH múltipla de 15 entre 15h e 120h.
@@ -11,6 +12,7 @@ export function DisciplineForm({ initial, onSaved, onCancel }: { initial?: Disci
   const [code, setCode] = useState(initial?.code ?? '');
   const [name, setName] = useState(initial?.name ?? '');
   const [workload, setWorkload] = useState(initial?.workload ?? 60);
+  const [prerequisiteIds, setPrerequisiteIds] = useState<number[]>(initial?.prerequisites.map((p) => p.id) ?? []);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -23,7 +25,7 @@ export function DisciplineForm({ initial, onSaved, onCancel }: { initial?: Disci
     setBusy(true);
     setError(null);
     try {
-      const input = { code: code.trim(), name: name.trim(), workload };
+      const input = { code: code.trim(), name: name.trim(), workload, prerequisiteIds };
       if (initial) await updateDiscipline(initial.id, input);
       else await createDiscipline(input);
       onSaved(initial ? 'Disciplina atualizada.' : 'Disciplina cadastrada.');
@@ -54,6 +56,7 @@ export function DisciplineForm({ initial, onSaved, onCancel }: { initial?: Disci
           </select>
         </Field>
       </div>
+      <PrerequisitePicker selfId={initial?.id} selected={prerequisiteIds} onChange={setPrerequisiteIds} />
       <div className="card-actions">
         <button className="btn btn-primary" disabled={busy}>
           Salvar

@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { DisciplinesPage } from '../src/pages/secretary/DisciplinesPage';
 import { mockApi, renderApp, secretary } from './helpers';
 
-const d = (n: number, extra = {}) => ({ id: n, code: `IF${n}`, name: `Disciplina ${n}`, workload: 60, ...extra });
+const d = (n: number, extra = {}) => ({ id: n, code: `IF${n}`, name: `Disciplina ${n}`, workload: 60, prerequisites: [], ...extra });
 const list = (data: unknown[], total = data.length) => ({ body: { data, page: 1, pageSize: 10, total } });
 
 describe('DisciplinesPage', () => {
@@ -47,7 +47,7 @@ describe('DisciplinesPage', () => {
     expect(await screen.findByText('Disciplina cadastrada.')).toBeInTheDocument();
     expect(await screen.findByText('Tópicos Especiais')).toBeInTheDocument();
     const post = spy.mock.calls.find(([, i]) => (i as RequestInit)?.method === 'POST')!;
-    expect(JSON.parse((post[1] as RequestInit).body as string)).toEqual({ code: 'IF900', name: 'Tópicos Especiais', workload: 90 });
+    expect(JSON.parse((post[1] as RequestInit).body as string)).toEqual({ code: 'IF900', name: 'Tópicos Especiais', workload: 90, prerequisiteIds: [] });
   });
 
   it('mostra a recusa de código duplicado sem fechar o formulário', async () => {
