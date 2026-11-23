@@ -6,6 +6,7 @@ import type { DB } from './db';
 import { AppError } from './errors';
 import { pageQuery } from './pagination';
 import { cancel, enroll, listActiveEnrollments } from './services/enrollments';
+import { capacitySchema, classSchema, createClass, listClasses, updateCapacity } from './services/classes';
 import { createDiscipline, disciplineSchema, listDisciplines, updateDiscipline } from './services/disciplines';
 import { listOffers } from './services/offers';
 import { createProfessor, listProfessors, professorSchema } from './services/professors';
@@ -57,6 +58,19 @@ export function createApp(db: DB) {
     res.status(201).json(createProfessor(db, professorSchema.parse(req.body)));
   });
   app.use('/professors', professors);
+
+  const classes = guarded('SECRETARY');
+  classes.get('/', (req, res) => {
+    const q = pageQuery.parse(req.query);
+    res.json(listClasses(db, q.page, q.pageSize));
+  });
+  classes.post('/', (req, res) => {
+    res.status(201).json(createClass(db, classSchema.parse(req.body)));
+  });
+  classes.patch('/:id', (req, res) => {
+    res.json(updateCapacity(db, idParam(req), capacitySchema.parse(req.body).capacity));
+  });
+  app.use('/classes', classes);
 
   // ---- Aluno (sempre escopado pelo id do token: regra 9) ----
   const offers = guarded('STUDENT');
