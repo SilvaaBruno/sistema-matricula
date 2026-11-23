@@ -1,5 +1,6 @@
 import type { DB } from '../db';
 import { AppError } from '../errors';
+import { missingPrerequisites } from './prerequisites';
 
 export function listActiveEnrollments(db: DB, studentId: number) {
   return db
@@ -31,6 +32,11 @@ export function enroll(db: DB, studentId: number, classId: number) {
       ).get(studentId, cls.disciplineId)
     ) {
       throw new AppError(409, 'ALREADY_ENROLLED', 'Você já está matriculado nesta disciplina');
+    }
+    // Requisito extra: só matricula quem foi aprovado em todos os pré-requisitos da disciplina.
+    const missing = missingPrerequisites(db, studentId, cls.disciplineId);
+    if (missing.length > 0) {
+      throw new AppError(409, 'PREREQUISITE_NOT_MET', `Pré-requisito(s) pendente(s): ${missing.join(', ')}`, { missing });
     }
     // Regra 6: turma lotada.
     const occupied = (db.prepare(`SELECT COUNT(*) AS n FROM enrollments WHERE class_id = ? AND status = 'ACTIVE'`).get(classId) as { n: number }).n;
