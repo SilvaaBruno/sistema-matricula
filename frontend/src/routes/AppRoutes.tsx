@@ -4,6 +4,7 @@ import { SecretaryLayout } from '../components/SecretaryLayout';
 import { homeOf, useAuth } from '../contexts/AuthContext';
 import { LoginPage } from '../pages/LoginPage';
 import { OffersPage } from '../pages/student/OffersPage';
+import { EnrollmentsPage } from '../pages/student/EnrollmentsPage';
 import { RequireRole } from './RequireRole';
 
 export function AppRoutes() {
@@ -21,6 +22,7 @@ export function AppRoutes() {
       >
         <Route index element={<Navigate to="ofertas" replace />} />
         <Route path="ofertas" element={<OffersPage />} />
+        <Route path="matriculas" element={<EnrollmentsPage />} />
       </Route>
       <Route
         path="/secretaria"

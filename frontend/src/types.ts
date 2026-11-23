@@ -29,3 +29,12 @@ export interface Offer {
   enrolled: boolean;
   approved: boolean;
 }
+
+export interface Enrollment {
+  id: number;
+  classId: number;
+  disciplineCode: string;
+  disciplineName: string;
+  workload: number;
+  professorName: string;
+}
